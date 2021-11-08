@@ -86,14 +86,17 @@ public class MainActivity extends AppCompatActivity {
                         // Remove all books from the adapter
                         Log.v("Testing", "Hello");
 
-                        ArrayAdapter arrayAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, books);
-                        listView.setAdapter(arrayAdapter);
+                        ArrayList<String> books_info = new ArrayList<>();
 
                         for (Book book : books) {
+                            books_info.add(book.getTitle()+" \n"+book.getAuthor());
                             Log.i("Data",book.getTitle());
                             Log.i("Image",book.getCoverUrl());
                             mTextViewResult.setText(book.toString());
                         }
+
+                        ArrayAdapter arrayAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, books_info);
+                        listView.setAdapter(arrayAdapter);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
