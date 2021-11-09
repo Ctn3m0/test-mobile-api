@@ -46,6 +46,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
 public class MainActivity extends AppCompatActivity {
 
     SearchView mySearchView;
@@ -67,7 +68,9 @@ public class MainActivity extends AppCompatActivity {
     ListView listView;
     ArrayList<String> mTitle = new ArrayList<String>();
     ArrayList<String> mAuthor = new ArrayList<String>();
+    ArrayList<String> mUrls = new ArrayList<String>();
     ArrayList<BitmapDrawable> images = new ArrayList<BitmapDrawable>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<Category> _Cate = new ArrayList<Category>();
         mTextViewResult = findViewById(R.id.text_view_result);
         mTextViewResult.setText("123213");
+
 
         List<String> _available_cate = new ArrayList<String>();
 
@@ -116,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void fetchBooks(String query, boolean search) {
+        Bitmap err = BitmapFactory.decodeResource(getResources(),R.drawable.not_found);
         this.search = search;
         client = new BookClient();
         ListView listView = (ListView) findViewById(R.id.search_items);
@@ -135,9 +140,46 @@ public class MainActivity extends AppCompatActivity {
 //                            mTitle.add("book.getTitle()");
 //                            mAuthor.add("book.getAuthor()");
                             mAuthor.add(book.getAuthor());
+                            mUrls.add(book.getCoverUrl());
 //                            Log.i("Data",book.getTitle());
                             mTextViewResult.setText(book.toString());
                             //test asyn
+//                    test.setImageResource(R.drawable.cloud);
+                            images.add(new BitmapDrawable(err));
+                        }
+
+                        Log.i("Data",mTitle.toString());
+                        Log.i("Data",mAuthor.toString());
+                        Log.i("Data",images.toString());
+
+                        String[] aTitle = new String[mTitle.size()];
+                        String[] aAuthor = new String[mAuthor.size()];
+                        BitmapDrawable[] aImage = new BitmapDrawable[mAuthor.size()];
+                        aTitle = mTitle.toArray(aTitle);
+                        aAuthor = mAuthor.toArray(aAuthor);
+                        aImage = images.toArray(aImage);
+                        Log.i("Image", aImage.toString());
+                        Log.i("Total", aImage.toString());
+
+                        MyAdapter adapter = new MyAdapter(MainActivity.this, aTitle, aAuthor, aImage);//, images);
+                        listView.setAdapter(adapter);
+
+                        int index = 0;
+//                        View rowView = listView.getAdapter().getView(index, null, listView);
+//                        if(rowView == null){
+//                            Log.i("child", "is null");
+//                        } else {
+//                            Log.i("child", "is not null");
+//                            ImageView hImage = rowView.findViewById(R.id.image);
+//                            hImage.setImageResource(R.drawable.err);
+//                        }
+//
+//                        ImageView hImage = findViewById(index);
+//                        hImage.setImageResource(R.drawable.err);
+                        for (String tUrl : mUrls) {
+                            View rowView = listView.getAdapter().getView(index, null, listView);
+//                            Log.i("Iter", String.valueOf(index));
+                            ImageView hImage = rowView.findViewById(R.id.image);
                             AsyncTask<String, Integer, Message> task = new AsyncTask<String, Integer, Message>() {
                                 @Override
                                 protected void onPreExecute() {
@@ -149,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
                                         // wait for 5 seconds to simulate a long network access
 //                    Thread.sleep(5000);
 //                  initialize URL
-                                        url = new URL(book.getCoverUrl());
+                                        url = new URL(tUrl);
                                         // Make a request to server
                                         HttpURLConnection connection =
                                                 (HttpURLConnection) url.openConnection();
@@ -189,38 +231,25 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 protected void onPostExecute(Message msg) {
 //                test.setImageDrawable(new BitmapDrawable(bitmap));
-                                    if(bitmap==null){
-                                        Bitmap err = BitmapFactory.decodeResource(getResources(),R.drawable.not_found);
+                                    if(bitmap == null){
 //                    test.setImageResource(R.drawable.cloud);
+                                        hImage.setImageResource(R.drawable.err);
                                         test.setImageDrawable(new BitmapDrawable(err));
-                                        images.add(new BitmapDrawable(err));
+                                        Log.i("Image", "okay set here");
                                     } else {
+                                        hImage.setImageDrawable(new BitmapDrawable(bitmap));
                                         test.setImageDrawable(new BitmapDrawable(bitmap));
-                                        images.add(new BitmapDrawable(bitmap));
                                     }
-
 //                                    test.setImageDrawable(new BitmapDrawable(bitmap));
                                     String content = msg.getData().getString("server_response");
                                     Toast.makeText(MainActivity.this, content, Toast.LENGTH_SHORT).show();
                                 }
                             };
                             task.execute();
+                            index++;
                         }
 
-                        Log.i("Data",mTitle.toString());
-                        Log.i("Data",mAuthor.toString());
-                        Log.i("Data",images.toString());
 
-                        String[] aTitle = new String[mTitle.size()];
-                        String[] aAuthor = new String[mAuthor.size()];
-                        BitmapDrawable[] aImage = new BitmapDrawable[images.size()];
-                        aTitle = mTitle.toArray(aTitle);
-                        aAuthor = mAuthor.toArray(aAuthor);
-                        aImage = images.toArray(aImage);
-                        Log.i("Image", aImage.toString());
-
-                        MyAdapter adapter = new MyAdapter(MainActivity.this, aTitle, aAuthor);//, images);
-                        listView.setAdapter(adapter);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -267,14 +296,14 @@ public class MainActivity extends AppCompatActivity {
         Context context;
         String rTitle[];
         String rAuthor[];
-//        BitmapDrawable rImgs[];
+        BitmapDrawable rImgs[];
 
-        MyAdapter (Context c, String title[], String author[]){// ArrayList<BitmapDrawable> imgs) {
+        MyAdapter (Context c, String title[], String author[], BitmapDrawable Images[]){// ArrayList<BitmapDrawable> imgs) {
             super(c, R.layout.row, R.id.textView1, title);
             this.context = c;
             this.rTitle = title;
             this.rAuthor = author;
-//            this.rImgs = Images;
+            this.rImgs = Images;
         }
 
         @NonNull
@@ -287,12 +316,15 @@ public class MainActivity extends AppCompatActivity {
             TextView myAuthor = row.findViewById(R.id.textView2);
 
             // now set our resources on views
-//            images.setImageDrawable(rImgs[position]);
+            images.setImageDrawable(rImgs[position]);
+//            images.setTag("ImageSearch"+position);
+//            images.setId(position);
             myTitle.setText(rTitle[position]);
             myAuthor.setText(rAuthor[position]);
 
             return row;
         }
+
     }
 
 }
