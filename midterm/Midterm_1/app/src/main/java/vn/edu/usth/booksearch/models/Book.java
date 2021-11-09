@@ -38,7 +38,7 @@ public class Book implements Parcelable {
     }
 
     public String getCoverUrl() {
-        return "http://covers.openlibrary.org/b/olid/" + openLibraryId + "-L.jpg?default=false";
+        return "https://covers.openlibrary.org/b/olid/" + openLibraryId + "-L.jpg?default=false";
     }
 
     public static Book fromJson(JSONObject jsonObject) {

@@ -30,4 +30,16 @@ public class BookClient {
             Log.e("MYAPP", "exception", e);
         }
     }
+
+    public void getCategory(final String query, JsonHttpResponseHandler handler) {
+        try {
+            String url = getApiUrl(query+".json?limit=12&offset=12");
+            Log.v("category", "subjects/"+query+".json?limit=12&offset=12");
+            client.get(url , handler);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            Log.e("MYAPP", "exception", e);
+        }
+    }
 }
